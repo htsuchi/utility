@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>カウントダウンタイマー</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    .timer-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .timer-row input[type="text"] {
+      width: 600px;
+      margin-right: 10px;
+    }
+    .timer-row input[type="time"] {
+      margin-right: 10px;
+    }
+    .timer-row span.remaining {
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .timer-row span.red {
+      color: red;
+    }
+    #bulk-text {
+      width: 1000px;
+      height: 300px;
+    }
+    #footer {
+      margin-top: 300px;
+      color: #888;
+      font-size: 10px;
+    }
+    pre {
+      background: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>カウントダウンタイマー</h1>
+
+  <div id="alarm-mode">
+    <h2>アラーム動作設定</h2>
+    <label><input type="radio" name="alarm" value="none"> アラームなし</label>
+    <label><input type="radio" name="alarm" value="once"> アラーム1回のみ（最長：1分）</label>
+  </div>
+
+  <hr>
+  <div id="timers">
+    <h2>タイマー一覧</h2>
+    <!-- タイマー行がここに追加される -->
+  </div>
+
+  <hr>
+  <div id="bulk-input">
+    <h2>タイマーの一括設定</h2>
+    <p>形式：HH:MM[,ラベル名]（ラベルは省略可）</p>
+    <p style="color:#666; font-size:14px;">
+      ※この操作では、①現在のタイマー設定はすべてクリアされ上書きされます。<br>
+      ②ラベル内の2つ目以降のカンマは全角の「、」に変換されます。
+    </p>
+    <textarea id="bulk-text" placeholder="HH:MM[,ラベル名]
+08:00,子ども送り出し
+10:00,買い物出発
+12:00,昼食準備
+14:00,井戸端会議
+16:00,洗濯物取り込み
+17:30,子ども帰宅
+19:00,お風呂準備
+21:00,洗濯"></textarea>
+    <br>
+    <button id="bulk-set">設定する</button>
+  </div>
+
+<script>
+  const timers = [];
+  let alarmAudio;
+
+  function getAlarmMode() {
+    return document.querySelector('input[name="alarm"]:checked')?.value || "none";
+  }
+
+  function createTimerRow(index) {
+    const row = document.createElement("div");
+    row.className = "timer-row";
+
+    const labelInput = document.createElement("input");
+    labelInput.type = "text";
+
+    const timeInput = document.createElement("input");
+    timeInput.type = "time";
+
+    const startBtn = document.createElement("button");
+    startBtn.textContent = "スタート";
+
+    const stopBtn = document.createElement("button");
+    stopBtn.textContent = "停止";
+
+    const resetBtn = document.createElement("button");
+    resetBtn.textContent = "リセット";
+
+    const remaining = document.createElement("span");
+    remaining.className = "remaining";
+    remaining.textContent = "未設定";
+
+    row.append(labelInput, timeInput, startBtn, stopBtn, resetBtn, remaining);
+    document.getElementById("timers").appendChild(row);
+
+    const timer = {
+      index,
+      labelInput,
+      timeInput,
+      startBtn,
+      stopBtn,
+      resetBtn,
+      remaining,
+      status: "stopped",
+      intervalId: null
+    };
+
+    timers.push(timer);
+    setupTimerEvents(timer);
+    updateButtonStates(timer);
+  }
+
+  function updateButtonStates(timer) {
+    const isRunning = timer.status === "running";
+    timer.startBtn.disabled = isRunning;
+    timer.stopBtn.disabled = !isRunning;
+    timer.resetBtn.disabled = false;
+  }
+
+  function restoreAlarmMode() {
+    const saved = JSON.parse(localStorage.getItem("AlarmMode") || "{}");
+    const value = saved.value || "none";
+    document.querySelector(`input[name="alarm"][value="${value}"]`)?.click();
+  }
+
+  document.querySelectorAll('input[name="alarm"]').forEach(radio => {
+    radio.onchange = () => {
+      localStorage.setItem("AlarmMode", JSON.stringify({ value: radio.value }));
+    };
+  });
+
+  document.addEventListener("DOMContentLoaded", () => {
+    alarmAudio = document.getElementById("alarm-audio");
+    for (let i = 0; i < 10; i++) {
+      createTimerRow(i);
+    }
+    restoreAlarmMode();
+    restoreTimers();
+    restoreBulkText();
+    checkDebugMode();
+  });
+
+  function setupTimerEvents(timer) {
+    timer.startBtn.onclick = () => {
+  if (!timer.timeInput.value) return;
+  const now = new Date();
+  const target = parseTime(timer.timeInput.value);
+  if (!target || target <= now) return; // ← ここで無効化
+
+  timer.status = "running";
+  updateButtonStates(timer);
+  timer.intervalId = setInterval(() => updateRemaining(timer), 1000);
+  saveTimers();
+
+    };
+
+    timer.stopBtn.onclick = () => {
+      timer.status = "stopped";
+      clearInterval(timer.intervalId);
+      updateButtonStates(timer);
+      saveTimers();
+      timer.remaining.textContent = "停止中";
+    };
+
+    timer.resetBtn.onclick = () => {
+      timer.status = "stopped";
+      clearInterval(timer.intervalId);
+      timer.timeInput.value = "";
+      timer.labelInput.value = "";
+      timer.remaining.textContent = "未設定";
+      updateButtonStates(timer);
+      saveTimers();
+    };
+  }
+
+  function updateRemaining(timer) {
+    const now = new Date();
+    const target = parseTime(timer.timeInput.value);
+    if (!target) {
+      timer.remaining.textContent = "未設定";
+      return;
+    }
+
+    const diff = target - now;
+    if (diff <= 0) {
+      timer.remaining.textContent = "終了";
+      if (timer.status === "running") {
+        handleAlarm(timer);
+      }
+      return;
+    }
+
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    timer.remaining.textContent = `${h}時間${m}分${s}秒`;
+    timer.remaining.classList.toggle("red", diff < 180000);
+  }
+
+  function parseTime(timeStr) {
+    const [hh, mm] = timeStr.split(":").map(Number);
+    if (isNaN(hh) || isNaN(mm)) return null;
+    const now = new Date();
+    now.setHours(hh, mm, 0, 0);
+    return now;
+  }
+
+  function handleAlarm(timer) {
+    const mode = getAlarmMode();
+    alarmAudio.currentTime = 0;
+    alarmAudio.loop = false;
+
+    if (mode === "none") {
+      alert("タイマー終了：" + timer.labelInput.value);
+      stopTimer(timer);
+    } else {
+      alarmAudio.play().then(() => {
+        alert("タイマー終了：" + timer.labelInput.value);
+        alarmAudio.pause();
+        stopTimer(timer);
+      }).catch(() => {
+        alert("タイマー終了（音声再生に失敗）：" + timer.labelInput.value);
+        stopTimer(timer);
+      });
+    }
+  }
+
+  function stopTimer(timer) {
+    timer.status = "stopped";
+    clearInterval(timer.intervalId);
+    updateButtonStates(timer);
+    saveTimers();
+  }
+
+  function saveTimers() {
+    const today = new Date().toISOString().slice(0, 10);
+    const data = timers.map(t => ({
+      label: t.labelInput.value.replace(/,/g, "、"),
+      time: t.timeInput.value,
+      status: t.status,
+      date: today
+    }));
+    localStorage.setItem("SimpleTimers", JSON.stringify(data));
+  }
+
+  function restoreTimers() {
+    const saved = JSON.parse(localStorage.getItem("SimpleTimers") || "[]");
+    const today = new Date().toISOString().slice(0, 10);
+    saved.forEach((item, i) => {
+      if (item.date !== today || i >= timers.length) return;
+      timers[i].labelInput.value = item.label;
+      timers[i].timeInput.value = item.time;
+      timers[i].status = item.status;
+      updateButtonStates(timers[i]);
+      if (item.status === "running") {
+        timers[i].intervalId = setInterval(() => updateRemaining(timers[i]), 1000);
+      } else {
+        updateRemaining(timers[i]);
+      }
+    });
+  }
+
+  function restoreBulkText() {
+    const saved = JSON.parse(localStorage.getItem("BulkTimerNormalized") || "{}");
+    if (saved.raw) {
+      document.getElementById("bulk-text").value = saved.raw;
+    }
+  }
+
+  document.getElementById("bulk-set").onclick = () => {
+    const raw = document.getElementById("bulk-text").value;
+    const lines = raw.split("\n");
+    const normalized = [];
+    const errors = [];
+
+    lines.forEach((line, i) => {
+      const original = line.trim();
+      if (original === "") {
+        normalized.push("");
+        return;
+      }
+
+      const parts = original.split(",");
+      const time = parts[0];
+      const label = parts.slice(1).join(",").replace(/,(?=.)/g, "、");
+
+      if (!/^\d{2}:\d{2}$/.test(time)) {
+        errors.push(`${i + 1}行目『${original}』`);
+        normalized.push(original);
+        return;
+      }
+
+      const [hh, mm] = time.split(":").map(Number);
+      if (hh < 0 || hh > 23 || mm < 0 || mm > 59) {
+        errors.push(`${i + 1}行目『${original}』`);
+        normalized.push(original);
+        return;
+      }
+
+      normalized.push(label ? `${time},${label}` : time);
+    });
+
+    document.getElementById("bulk-text").value = normalized.join("\n");
+    localStorage.setItem("BulkTimerNormalized", JSON.stringify({ raw: normalized.join("\n") }));
+
+    if (errors.length > 0) {
+      alert("以下の行に形式エラーがあります：\n" + errors.join("\n"));
+    }
+
+    const validLines = normalized.filter(line => {
+      const [time] = line.split(",");
+      const [hh, mm] = time.split(":").map(Number);
+      return /^\d{2}:\d{2}$/.test(time) && hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59;
+    });
+
+    if (validLines.length > 10) {
+      alert("タイマーは最大10個までです。");
+      return;
+    }
+
+    timers.forEach(t => t.resetBtn.click());
+    validLines.forEach((line, i) => {
+      const [time, ...labelParts] = line.split(",");
+      timers[i].timeInput.value = time;
+      timers[i].labelInput.value = labelParts.join(",").replace(/,(?=.)/g, "、");
+      timers[i].startBtn.click();
+    });
+  };
+
+  function checkDebugMode() {
+    const params = new URLSearchParams(location.search);
+    const debugView = document.getElementById("debug-view");
+    if (params.get("mode") !== "debug" && debugView) {
+      debugView.style.display = "none";
+    }
+  }
+
+  document.getElementById("show-storage").onclick = () => {
+    const keys = ["SimpleTimers", "AlarmMode", "BulkTimerNormalized"];
+    const output = keys.map(key => {
+      const value = localStorage.getItem(key);
+      return `${key}:\n${value ? JSON.stringify(JSON.parse(value), null, 2) : "(未設定)"}`;
+    }).join("\n\n");
+    document.getElementById("storage-output").textContent = output;
+  };
+
+  document.getElementById("clear-storage").onclick = () => {
+    ["SimpleTimers", "AlarmMode", "BulkTimerNormalized"].forEach(key => {
+      localStorage.removeItem(key);
+    });
+    document.getElementById("storage-output").textContent = "(localStorageを初期化しました)";
+    alert("localStorageを初期化しました。ページを再読み込みしてください。");
+  };
+</script>
+
+<hr>
+<div id="debug-view">
+  <h2>localStorageの設定確認</h2>
+  <button id="show-storage">確認する</button>
+  <button id="clear-storage">localStorageを初期化する</button>
+  <pre id="storage-output"></pre>
+</div>
+
+<div id="footer">
+  BGM by OtoLogic(CC BY 4.0)
+</div>
+
+<audio id="alarm-audio" src="alarm_1m.mp3" preload="auto"></audio>
+</body>
+</html>
