@@ -69,76 +69,34 @@
   <div id="toast"></div>
 <!-- パート1終了 -->
 
-  <!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>会議通知ツール v2.8</title>
-  <style>
-    body { font-family: sans-serif; margin: 20px; }
-    table { border-collapse: collapse; margin: 10px 40px; width: calc(100% - 80px); table-layout: fixed; }
-    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; overflow: hidden; white-space: nowrap; }
-    th { background-color: #f0f0f0; }
-    ul { margin-left: 40px; }
-    .success { color: green; }
-    .failure { color: red; }
-    details { margin-top: 20px; }
-    .boxWithTitle {
-      position: relative;
-      margin: 2em 0;
-      padding: 1em;
-      border: solid 2px #95ccff;
-      border-radius: 8px;
-      background: #f9f9ff;
-    }
-    .boxWithTitle .box-title {
-      position: absolute;
-      top: -13px;
-      left: 15px;
-      padding: 0 10px;
-      font-size: 16px;
-      background: #fff;
-      color: #95ccff;
-      font-weight: bold;
-    }
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #333;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 6px;
-      opacity: 0;
-      transition: opacity 0.5s;
-      z-index: 9999;
-    }
-    #clockDisplay {
-      font-size: 0.7em;
-      margin-left: 10px;
-      color: #666;
-      vertical-align: middle;
-    }
-    #meetingTable td:nth-child(1) { width: 240px; }
-    #meetingTable td:nth-child(2) { width: 80px; text-align: center; }
-    #meetingTable td:nth-child(3) { width: 70px; text-align: center; }
-    #meetingTable td:nth-child(4) { width: 60px; text-align: center; }
-    #meetingTable td:nth-child(5) { width: 90px; text-align: center; }
-    #meetingTable td:nth-child(6) { width: 140px; text-align: center; }
-  </style>
-</head>
-<body>
-  <h1>会議通知ツール v2.8 <span id="clockDisplay"></span></h1>
-  <div class="boxWithTitle">
-    <span class="box-title">本ツールについて</span>
-    <p style="font-size: 0.9em; color: #555; line-height: 1.6;">
-      このツールは、定期的な会議の開始時刻に合わせて通知を表示し、指定されたURLを自動で起動する支援ツールです。<br>
-      通知タイミングや起動タイミングは自由に設定でき、複数の会議を一括管理できます。<br>
-      ブラウザ上で動作し、保存された情報はローカルに保持されます。
-    </p>
+    <div class="boxWithTitle" id="inputArea">
+    <span class="box-title">会議登録と入力方式</span>
+    <button onclick="switchMode('text')">一括登録に便利（CSV風）</button>
+    <button onclick="switchMode('form')">1件ずつ丁寧に登録</button>
+    <p>入力方式はいつでも切り替え可能です。保存内容は共通です。</p>
+    <div id="inputFields"></div>
   </div>
-  <div id="toast"></div>
-<!-- パート1終了 -->
+
+  <div class="boxWithTitle" id="settingsArea">
+    <span class="box-title">通知タイミング</span>
+    <label><input type="checkbox" value="15">15分前</label>
+    <label><input type="checkbox" value="10">10分前</label>
+    <label><input type="checkbox" value="5">5分前</label>
+    <label><input type="checkbox" value="3" checked>3分前</label>
+    <label><input type="checkbox" value="1">1分前</label>
+  </div>
+
+  <div class="boxWithTitle">
+    <span class="box-title">URL起動タイミング</span>
+    <label><input type="radio" name="launch" value="15">15分前</label>
+    <label><input type="radio" name="launch" value="10">10分前</label>
+    <label><input type="radio" name="launch" value="5">5分前</label>
+    <label><input type="radio" name="launch" value="3" checked>3分前</label>
+    <label><input type="radio" name="launch" value="1">1分前</label>
+    <label><input type="radio" name="launch" value="0">開始時</label>
+    <p style="margin-top:10px;">通知は複数回届きます。URLは1回だけ自動起動されます。</p>
+  </div>
+<!-- パート2終了 -->
 
     <div class="boxWithTitle">
     <span class="box-title">登録済み会議一覧</span>
