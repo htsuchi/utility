@@ -2,10 +2,15 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>会議通知ツール</title>
+  <title>会議通知ツール v2.8.5</title>
   <style>
     body { font-family: sans-serif; margin: 20px; }
-    table { border-collapse: collapse; margin: 10px 40px; width: calc(100% - 80px); table-layout: fixed; }
+    table {
+      border-collapse: collapse;
+      margin: 10px 40px;
+      width: calc(100% - 80px);
+      table-layout: fixed;
+    }
     th, td {
       border: 1px solid #ccc;
       padding: 6px 10px;
@@ -58,7 +63,7 @@
   </style>
 </head>
 <body>
-  <h1>会議通知ツール v2.8.4 <span id="clockDisplay"></span></h1>
+  <h1>会議通知ツール v2.8.5 <span id="clockDisplay"></span></h1>
   <div class="boxWithTitle">
     <span class="box-title">本ツールについて</span>
     <p style="font-size: 0.9em; color: #555; line-height: 1.6;">
@@ -70,16 +75,16 @@
   <div id="toast"></div>
 <!-- パート1終了 -->
 
-  <div class="boxWithTitle">
+    <div class="boxWithTitle">
     <span class="box-title">登録済み会議一覧</span>
     <table id="meetingTable">
       <colgroup>
-        <col style="width:220px">
-        <col style="width:60px">
-        <col style="width:60px">
-        <col style="width:60px">
-        <col style="width:80px">
-        <col style="width:130px">
+        <col style="width:180px">
+        <col style="width:40px">
+        <col style="width:20px">
+        <col style="width:20px">
+        <col style="width:20px">
+        <col style="width:50px">
       </colgroup>
       <thead>
         <tr>
@@ -104,29 +109,32 @@
   </div>
 <!-- パート2終了 -->
 
-  <div class="boxWithTitle">
-    <span class="box-title">登録済み会議一覧</span>
-    <table id="meetingTable">
-      <thead>
-        <tr>
-          <th>タイトル</th>
-          <th>曜日</th>
-          <th>時刻</th>
-          <th>URL</th>
-          <th>操作</th>
-          <th>起動までの時間</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <div class="boxWithTitle" id="inputArea">
+    <span class="box-title">会議登録と入力方式</span>
+    <button onclick="switchMode('text')">一括登録に便利（CSV風）</button>
+    <button onclick="switchMode('form')">1件ずつ丁寧に登録</button>
+    <p>入力方式はいつでも切り替え可能です。保存内容は共通です。</p>
+    <div id="inputFields"></div>
+  </div>
+
+  <div class="boxWithTitle" id="settingsArea">
+    <span class="box-title">通知タイミング</span>
+    <label><input type="checkbox" value="15">15分前</label>
+    <label><input type="checkbox" value="10">10分前</label>
+    <label><input type="checkbox" value="5">5分前</label>
+    <label><input type="checkbox" value="3" checked>3分前</label>
+    <label><input type="checkbox" value="1">1分前</label>
   </div>
 
   <div class="boxWithTitle">
-    <span class="box-title">本日の通知履歴</span>
-    <details open>
-      <summary>今日の履歴</summary>
-      <ul id="todayHistoryList"></ul>
-    </details>
+    <span class="box-title">URL起動タイミング</span>
+    <label><input type="radio" name="launch" value="15">15分前</label>
+    <label><input type="radio" name="launch" value="10">10分前</label>
+    <label><input type="radio" name="launch" value="5">5分前</label>
+    <label><input type="radio" name="launch" value="3" checked>3分前</label>
+    <label><input type="radio" name="launch" value="1">1分前</label>
+    <label><input type="radio" name="launch" value="0">開始時</label>
+    <p style="margin-top:10px;">通知は複数回届きます。URLは1回だけ自動起動されます。</p>
   </div>
 <!-- パート3終了 -->
 
