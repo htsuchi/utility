@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>会議通知ツール v2.8</title>
+  <title>会議通知ツール v2.8.2</title>
   <style>
     body { font-family: sans-serif; margin: 20px; }
     table { border-collapse: collapse; margin: 10px 40px; width: calc(100% - 80px); table-layout: fixed; }
@@ -48,12 +48,12 @@
       color: #666;
       vertical-align: middle;
     }
-    #meetingTable td:nth-child(1) { width: 240px; }
-    #meetingTable td:nth-child(2) { width: 80px; text-align: center; }
-    #meetingTable td:nth-child(3) { width: 70px; text-align: center; }
+    #meetingTable td:nth-child(1) { width: 220px; }
+    #meetingTable td:nth-child(2) { width: 60px; text-align: center; }
+    #meetingTable td:nth-child(3) { width: 60px; text-align: center; }
     #meetingTable td:nth-child(4) { width: 60px; text-align: center; }
-    #meetingTable td:nth-child(5) { width: 90px; text-align: center; }
-    #meetingTable td:nth-child(6) { width: 140px; text-align: center; }
+    #meetingTable td:nth-child(5) { width: 80px; text-align: center; }
+    #meetingTable td:nth-child(6) { width: 130px; text-align: center; }
   </style>
 </head>
 <body>
@@ -69,7 +69,7 @@
   <div id="toast"></div>
 <!-- パート1終了 -->
 
-    <div class="boxWithTitle" id="inputArea">
+  <div class="boxWithTitle" id="inputArea">
     <span class="box-title">会議登録と入力方式</span>
     <button onclick="switchMode('text')">一括登録に便利（CSV風）</button>
     <button onclick="switchMode('form')">1件ずつ丁寧に登録</button>
@@ -98,7 +98,7 @@
   </div>
 <!-- パート2終了 -->
 
-    <div class="boxWithTitle">
+  <div class="boxWithTitle">
     <span class="box-title">登録済み会議一覧</span>
     <table id="meetingTable">
       <thead>
@@ -287,28 +287,19 @@
         const dayText = row.children[1].textContent;
         const timeText = row.children[2].textContent;
         const meetingDays = dayText.split("/").map(d => weekdayMap[d.trim()]);
+        const cell = row.querySelector(".countdown");
+
         if (!meetingDays.includes(todayNum)) {
-          row.querySelector(".countdown").textContent = "";
+          cell.textContent = "";
           return;
         }
 
         const [hour, minute] = timeText.split(":").map(Number);
         const meetingTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
-        const launchAt = new Date(meetingTime.getTime() - launchOffset * 60000);
-        const now = new Date();
-        const diff = launchAt - now;
-
-        const cell = row.querySelector(".countdown");
-        if (diff <= 0) {
-          cell.textContent = "終了";
-        } else {
-          const h = Math.floor(diff / 3600000);
-          const m = Math.floor((diff % 3600000) / 60000);
-          const s = Math.floor((diff % 60000) / 1000);
-          cell.textContent = `残り ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
-        }
+        cell.textContent = getRemainingTime(meetingTime, launchOffset);
       });
     }
+
     setInterval(updateCountdowns, 1000);
 <!-- パート6終了 -->
 
@@ -398,7 +389,7 @@
     }
 <!-- パート7終了 -->
 
-    // 初期化処理
+      // 初期化処理
     const savedMeetings = localStorage.getItem("meetings");
     if (savedMeetings) {
       const meetings = JSON.parse(savedMeetings);
@@ -427,6 +418,8 @@
     // 初期表示：フォームモード
     switchMode('form');
   </script>
-</body>
-</html>
 <!-- パート8終了 -->
+
+  </body>
+</html>
+<!-- パート9終了 -->
