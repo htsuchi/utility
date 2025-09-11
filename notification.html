@@ -2,11 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>会議通知ツール v2.6</title>
+  <title>会議通知ツール v2.7</title>
   <style>
     body { font-family: sans-serif; margin: 20px; }
-    table { border-collapse: collapse; margin: 10px 40px; width: calc(100% - 80px); }
-    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    table { border-collapse: collapse; margin: 10px 40px; width: calc(100% - 80px); table-layout: fixed; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; overflow: hidden; white-space: nowrap; }
     th { background-color: #f0f0f0; }
     ul { margin-left: 40px; }
     .success { color: green; }
@@ -42,15 +42,18 @@
       transition: opacity 0.5s;
       z-index: 9999;
     }
+    #meetingTable td:nth-child(1) { width: 240px; }
+    #meetingTable td:nth-child(2) { width: 100px; text-align: center; }
+    #meetingTable td:nth-child(3) { width: 80px; text-align: center; }
+    #meetingTable td:nth-child(4) { width: 80px; text-align: center; }
+    #meetingTable td:nth-child(5) { width: 100px; text-align: center; }
+    #meetingTable td:nth-child(6) { width: 120px; text-align: center; }
   </style>
 </head>
 <body>
-  <h1>会議通知ツール v2.6</h1>
-
-  <!-- トースト通知領域 -->
+  <h1>会議通知ツール v2.7 <span id="clockDisplay"></span></h1>
   <div id="toast"></div>
 
-  <!-- 入力方式と登録 -->
   <div class="boxWithTitle" id="inputArea">
     <span class="box-title">会議登録と入力方式</span>
     <button onclick="switchMode('text')">一括登録に便利（CSV風）</button>
@@ -59,7 +62,6 @@
     <div id="inputFields"></div>
   </div>
 
-  <!-- 通知タイミング -->
   <div class="boxWithTitle" id="settingsArea">
     <span class="box-title">通知タイミング</span>
     <label><input type="checkbox" value="15">15分前</label>
@@ -69,7 +71,6 @@
     <label><input type="checkbox" value="1">1分前</label>
   </div>
 
-  <!-- URL起動タイミング -->
   <div class="boxWithTitle">
     <span class="box-title">URL起動タイミング</span>
     <label><input type="radio" name="launch" value="15">15分前</label>
@@ -81,18 +82,18 @@
     <p style="margin-top:10px;">通知は複数回届きます。URLは1回だけ自動起動されます。</p>
   </div>
 
-    <!-- 登録済み会議一覧 -->
-  <div class="boxWithTitle">
+    <div class="boxWithTitle">
     <span class="box-title">登録済み会議一覧</span>
     <table id="meetingTable">
       <thead>
-        <tr><th>タイトル</th><th>曜日</th><th>時刻</th><th>URL</th><th>操作</th></tr>
+        <tr>
+          <th>タイトル</th><th>曜日</th><th>時刻</th><th>URL</th><th>操作</th><th>起動までの時間</th>
+        </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <!-- 本日の通知履歴 -->
   <div class="boxWithTitle">
     <span class="box-title">本日の通知履歴</span>
     <details open>
@@ -101,7 +102,6 @@
     </details>
   </div>
 
-  <!-- チュートリアル -->
   <div id="tutorialModal">
     <div id="tutorialContent">
       <p id="tutorialText"></p>
@@ -132,9 +132,19 @@
       document.getElementById("tutorialModal").style.display = "none";
     }
 
-    let editingIndex = null;
+    function updateClock() {
+      const now = new Date();
+      const days = ["日", "月", "火", "水", "木", "金", "土"];
+      const str = `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,"0")}月${String(now.getDate()).padStart(2,"0")}日(${days[now.getDay()]}) ${now.toLocaleTimeString()}`;
+      document.getElementById("clockDisplay").textContent = str;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-        function switchMode(mode, meeting = null, index = null) {
+    let editingIndex = null;
+    const launchHistory = new Set();
+
+      function switchMode(mode, meeting = null, index = null) {
       const area = document.getElementById("inputFields");
       area.innerHTML = "";
       editingIndex = index;
@@ -207,7 +217,7 @@
       scheduleAll(saved);
     }
 
-        function editMeeting(index) {
+    function editMeeting(index) {
       const saved = JSON.parse(localStorage.getItem("meetings") || "[]");
       const meeting = saved[index];
       switchMode('form', meeting, index);
@@ -221,13 +231,42 @@
       scheduleAll(saved);
     }
 
+    function truncateTitle(title) {
+      const max = 20;
+      return title.length > max ? title.slice(0, max) + "…" : title;
+    }
+
+      function getRemainingTime(meetingTime, offsetMinutes) {
+      const launchAt = new Date(meetingTime.getTime() - offsetMinutes * 60000);
+      const now = new Date();
+      const diff = launchAt - now;
+      if (diff <= 0) return "終了";
+      const mins = Math.floor(diff / 60000);
+      const secs = Math.floor((diff % 60000) / 1000);
+      return `残り ${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
+    }
+
     function renderSettings(meetings) {
       const tbody = document.querySelector("#meetingTable tbody");
       tbody.innerHTML = "";
+      const today = new Date();
+      const weekdayMap = { "日": 0, "月": 1, "火": 2, "水": 3, "木": 4, "金": 5, "土": 6 };
+      const todayNum = today.getDay();
+      const launchOffset = getLaunchTime();
+
       meetings.forEach((meeting, index) => {
         const tr = document.createElement("tr");
+        const meetingDays = meeting.day.split("/").map(d => weekdayMap[d.trim()]);
+        const [hour, minute] = meeting.time.split(":").map(Number);
+        const meetingTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
+        let timeInfo = "";
+
+        if (meetingDays.includes(todayNum)) {
+          timeInfo = getRemainingTime(meetingTime, launchOffset);
+        }
+
         tr.innerHTML = `
-          <td>${meeting.title}</td>
+          <td>${truncateTitle(meeting.title)}</td>
           <td>${meeting.day}</td>
           <td>${meeting.time}</td>
           <td><a href="${meeting.url}" target="_blank">リンク</a></td>
@@ -235,6 +274,7 @@
             <button onclick="editMeeting(${index})">✏️</button>
             <button onclick="deleteMeeting(${index})">🗑️</button>
           </td>
+          <td>${timeInfo}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -248,6 +288,15 @@
     function getLaunchTime() {
       const radio = document.querySelector('input[name="launch"]:checked');
       return radio ? parseInt(radio.value) : null;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.style.opacity = 1;
+      setTimeout(() => {
+        toast.style.opacity = 0;
+      }, 3000);
     }
 
     function scheduleAll(meetings) {
@@ -278,7 +327,9 @@
           });
 
           const launchAt = new Date(meetingTime.getTime() - launchTime * 60000);
-          if (launchAt > new Date()) {
+          const launchKey = `${launchAt.toISOString()}|${meeting.url}`;
+          if (!launchHistory.has(launchKey) && launchAt > new Date()) {
+            launchHistory.add(launchKey);
             setTimeout(() => {
               const win = window.open(meeting.url);
               const status = win ? "URL起動成功" : "URL起動失敗（ポップアップブロックの可能性）";
@@ -314,15 +365,6 @@
       });
     }
 
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      toast.textContent = message;
-      toast.style.opacity = 1;
-      setTimeout(() => {
-        toast.style.opacity = 0;
-      }, 3000);
-    }
-
     // 初期化処理
     const savedMeetings = localStorage.getItem("meetings");
     if (savedMeetings) {
@@ -336,6 +378,17 @@
     const history = JSON.parse(localStorage.getItem("history") || "{}");
     if (history[todayKey]) {
       renderHistory(todayKey, history[todayKey]);
+    }
+
+    // 通知許可の確認とリクエスト
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          console.log("通知が許可されました");
+        } else {
+          console.warn("通知は拒否されました");
+        }
+      });
     }
 
     // 初期表示：フォームモード
