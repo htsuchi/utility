@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>会議通知ツール v2.7</title>
+  <title>会議通知ツール v2.8</title>
   <style>
     body { font-family: sans-serif; margin: 20px; }
     table { border-collapse: collapse; margin: 10px 40px; width: calc(100% - 80px); table-layout: fixed; }
@@ -42,52 +42,115 @@
       transition: opacity 0.5s;
       z-index: 9999;
     }
+    #clockDisplay {
+      font-size: 0.7em;
+      margin-left: 10px;
+      color: #666;
+      vertical-align: middle;
+    }
     #meetingTable td:nth-child(1) { width: 240px; }
-    #meetingTable td:nth-child(2) { width: 100px; text-align: center; }
-    #meetingTable td:nth-child(3) { width: 80px; text-align: center; }
-    #meetingTable td:nth-child(4) { width: 80px; text-align: center; }
-    #meetingTable td:nth-child(5) { width: 100px; text-align: center; }
-    #meetingTable td:nth-child(6) { width: 120px; text-align: center; }
+    #meetingTable td:nth-child(2) { width: 80px; text-align: center; }
+    #meetingTable td:nth-child(3) { width: 70px; text-align: center; }
+    #meetingTable td:nth-child(4) { width: 60px; text-align: center; }
+    #meetingTable td:nth-child(5) { width: 90px; text-align: center; }
+    #meetingTable td:nth-child(6) { width: 140px; text-align: center; }
   </style>
 </head>
 <body>
-  <h1>会議通知ツール v2.7 <span id="clockDisplay"></span></h1>
-  <div id="toast"></div>
-
-  <div class="boxWithTitle" id="inputArea">
-    <span class="box-title">会議登録と入力方式</span>
-    <button onclick="switchMode('text')">一括登録に便利（CSV風）</button>
-    <button onclick="switchMode('form')">1件ずつ丁寧に登録</button>
-    <p>入力方式はいつでも切り替え可能です。保存内容は共通です。</p>
-    <div id="inputFields"></div>
-  </div>
-
-  <div class="boxWithTitle" id="settingsArea">
-    <span class="box-title">通知タイミング</span>
-    <label><input type="checkbox" value="15">15分前</label>
-    <label><input type="checkbox" value="10">10分前</label>
-    <label><input type="checkbox" value="5">5分前</label>
-    <label><input type="checkbox" value="3" checked>3分前</label>
-    <label><input type="checkbox" value="1">1分前</label>
-  </div>
-
+  <h1>会議通知ツール v2.8 <span id="clockDisplay"></span></h1>
   <div class="boxWithTitle">
-    <span class="box-title">URL起動タイミング</span>
-    <label><input type="radio" name="launch" value="15">15分前</label>
-    <label><input type="radio" name="launch" value="10">10分前</label>
-    <label><input type="radio" name="launch" value="5">5分前</label>
-    <label><input type="radio" name="launch" value="3" checked>3分前</label>
-    <label><input type="radio" name="launch" value="1">1分前</label>
-    <label><input type="radio" name="launch" value="0">開始時</label>
-    <p style="margin-top:10px;">通知は複数回届きます。URLは1回だけ自動起動されます。</p>
+    <span class="box-title">本ツールについて</span>
+    <p style="font-size: 0.9em; color: #555; line-height: 1.6;">
+      このツールは、定期的な会議の開始時刻に合わせて通知を表示し、指定されたURLを自動で起動する支援ツールです。<br>
+      通知タイミングや起動タイミングは自由に設定でき、複数の会議を一括管理できます。<br>
+      ブラウザ上で動作し、保存された情報はローカルに保持されます。
+    </p>
   </div>
+  <div id="toast"></div>
+<!-- パート1終了 -->
+
+  <!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>会議通知ツール v2.8</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    table { border-collapse: collapse; margin: 10px 40px; width: calc(100% - 80px); table-layout: fixed; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; overflow: hidden; white-space: nowrap; }
+    th { background-color: #f0f0f0; }
+    ul { margin-left: 40px; }
+    .success { color: green; }
+    .failure { color: red; }
+    details { margin-top: 20px; }
+    .boxWithTitle {
+      position: relative;
+      margin: 2em 0;
+      padding: 1em;
+      border: solid 2px #95ccff;
+      border-radius: 8px;
+      background: #f9f9ff;
+    }
+    .boxWithTitle .box-title {
+      position: absolute;
+      top: -13px;
+      left: 15px;
+      padding: 0 10px;
+      font-size: 16px;
+      background: #fff;
+      color: #95ccff;
+      font-weight: bold;
+    }
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      z-index: 9999;
+    }
+    #clockDisplay {
+      font-size: 0.7em;
+      margin-left: 10px;
+      color: #666;
+      vertical-align: middle;
+    }
+    #meetingTable td:nth-child(1) { width: 240px; }
+    #meetingTable td:nth-child(2) { width: 80px; text-align: center; }
+    #meetingTable td:nth-child(3) { width: 70px; text-align: center; }
+    #meetingTable td:nth-child(4) { width: 60px; text-align: center; }
+    #meetingTable td:nth-child(5) { width: 90px; text-align: center; }
+    #meetingTable td:nth-child(6) { width: 140px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>会議通知ツール v2.8 <span id="clockDisplay"></span></h1>
+  <div class="boxWithTitle">
+    <span class="box-title">本ツールについて</span>
+    <p style="font-size: 0.9em; color: #555; line-height: 1.6;">
+      このツールは、定期的な会議の開始時刻に合わせて通知を表示し、指定されたURLを自動で起動する支援ツールです。<br>
+      通知タイミングや起動タイミングは自由に設定でき、複数の会議を一括管理できます。<br>
+      ブラウザ上で動作し、保存された情報はローカルに保持されます。
+    </p>
+  </div>
+  <div id="toast"></div>
+<!-- パート1終了 -->
 
     <div class="boxWithTitle">
     <span class="box-title">登録済み会議一覧</span>
     <table id="meetingTable">
       <thead>
         <tr>
-          <th>タイトル</th><th>曜日</th><th>時刻</th><th>URL</th><th>操作</th><th>起動までの時間</th>
+          <th>タイトル</th>
+          <th>曜日</th>
+          <th>時刻</th>
+          <th>URL</th>
+          <th>操作</th>
+          <th>起動までの時間</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -101,37 +164,9 @@
       <ul id="todayHistoryList"></ul>
     </details>
   </div>
+<!-- パート3終了 -->
 
-  <div id="tutorialModal">
-    <div id="tutorialContent">
-      <p id="tutorialText"></p>
-      <button onclick="nextTutorial()">次へ</button>
-    </div>
-  </div>
-
-  <script>
-    const tutorialSteps = [
-      "このツールは、会議の通知とURL起動を自動化する支援ツールです。",
-      "通知を許可すると、設定した時間に会議の開始をお知らせします。",
-      "会議情報を入力し、保存すると通知と起動がスケジュールされます。",
-      "通知は複数回届きますが、URL起動は1回のみです。混同しないようご注意ください。",
-      "準備ができたら、画面右上の入力方式を選んで始めましょう。"
-    ];
-    let tutorialStep = 0;
-    document.getElementById("tutorialText").textContent = tutorialSteps[tutorialStep];
-    function nextTutorial() {
-      tutorialStep++;
-      if (tutorialStep < tutorialSteps.length) {
-        document.getElementById("tutorialText").textContent = tutorialSteps[tutorialStep];
-      } else {
-        document.getElementById("tutorialModal").style.display = "none";
-        localStorage.setItem("tutorialShown", "true");
-      }
-    }
-    if (localStorage.getItem("tutorialShown")) {
-      document.getElementById("tutorialModal").style.display = "none";
-    }
-
+    <script>
     function updateClock() {
       const now = new Date();
       const days = ["日", "月", "火", "水", "木", "金", "土"];
@@ -144,7 +179,7 @@
     let editingIndex = null;
     const launchHistory = new Set();
 
-      function switchMode(mode, meeting = null, index = null) {
+    function switchMode(mode, meeting = null, index = null) {
       const area = document.getElementById("inputFields");
       area.innerHTML = "";
       editingIndex = index;
@@ -187,8 +222,9 @@
       renderSettings(meetings);
       scheduleAll(meetings);
     }
+<!-- パート4終了 -->
 
-    function saveForm() {
+      function saveForm() {
       const dayCheckboxes = document.querySelectorAll('input[name="day"]:checked');
       const dayValues = Array.from(dayCheckboxes).map(cb => cb.value).join("/");
 
@@ -235,15 +271,17 @@
       const max = 20;
       return title.length > max ? title.slice(0, max) + "…" : title;
     }
+<!-- パート5終了 -->
 
       function getRemainingTime(meetingTime, offsetMinutes) {
       const launchAt = new Date(meetingTime.getTime() - offsetMinutes * 60000);
       const now = new Date();
       const diff = launchAt - now;
       if (diff <= 0) return "終了";
-      const mins = Math.floor(diff / 60000);
-      const secs = Math.floor((diff % 60000) / 1000);
-      return `残り ${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`;
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      return `残り ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
     }
 
     function renderSettings(meetings) {
@@ -274,13 +312,49 @@
             <button onclick="editMeeting(${index})">✏️</button>
             <button onclick="deleteMeeting(${index})">🗑️</button>
           </td>
-          <td>${timeInfo}</td>
+          <td class="countdown">${timeInfo}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function getNotifyTimes() {
+    function updateCountdowns() {
+      const rows = document.querySelectorAll("#meetingTable tbody tr");
+      const today = new Date();
+      const weekdayMap = { "日": 0, "月": 1, "火": 2, "水": 3, "木": 4, "金": 5, "土": 6 };
+      const todayNum = today.getDay();
+      const launchOffset = getLaunchTime();
+
+      rows.forEach(row => {
+        const dayText = row.children[1].textContent;
+        const timeText = row.children[2].textContent;
+        const meetingDays = dayText.split("/").map(d => weekdayMap[d.trim()]);
+        if (!meetingDays.includes(todayNum)) {
+          row.querySelector(".countdown").textContent = "";
+          return;
+        }
+
+        const [hour, minute] = timeText.split(":").map(Number);
+        const meetingTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
+        const launchAt = new Date(meetingTime.getTime() - launchOffset * 60000);
+        const now = new Date();
+        const diff = launchAt - now;
+
+        const cell = row.querySelector(".countdown");
+        if (diff <= 0) {
+          cell.textContent = "終了";
+        } else {
+          const h = Math.floor(diff / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          const s = Math.floor((diff % 60000) / 1000);
+          cell.textContent = `残り ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+        }
+      });
+    }
+    setInterval(updateCountdowns, 1000);
+<!-- パート6終了 -->
+
+      function getNotifyTimes() {
       const checkboxes = document.querySelectorAll('#settingsArea input[type="checkbox"]:checked');
       return Array.from(checkboxes).map(cb => parseInt(cb.value));
     }
@@ -364,6 +438,7 @@
         list.appendChild(li);
       });
     }
+<!-- パート7終了 -->
 
     // 初期化処理
     const savedMeetings = localStorage.getItem("meetings");
@@ -396,3 +471,4 @@
   </script>
 </body>
 </html>
+<!-- パート8終了 -->
