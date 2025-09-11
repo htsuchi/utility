@@ -2,11 +2,18 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>会議通知ツール v2.8.3</title>
+  <title>会議通知ツール</title>
   <style>
     body { font-family: sans-serif; margin: 20px; }
     table { border-collapse: collapse; margin: 10px 40px; width: calc(100% - 80px); table-layout: fixed; }
-    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; overflow: hidden; white-space: nowrap; }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     th { background-color: #f0f0f0; }
     ul { margin-left: 40px; }
     .success { color: green; }
@@ -48,16 +55,10 @@
       color: #666;
       vertical-align: middle;
     }
-    #meetingTable td:nth-child(1) { width: 220px; }
-    #meetingTable td:nth-child(2) { width: 60px; text-align: center; }
-    #meetingTable td:nth-child(3) { width: 60px; text-align: center; }
-    #meetingTable td:nth-child(4) { width: 60px; text-align: center; }
-    #meetingTable td:nth-child(5) { width: 80px; text-align: center; }
-    #meetingTable td:nth-child(6) { width: 130px; text-align: center; }
   </style>
 </head>
 <body>
-  <h1>会議通知ツール v2.8.3 <span id="clockDisplay"></span></h1>
+  <h1>会議通知ツール v2.8.4 <span id="clockDisplay"></span></h1>
   <div class="boxWithTitle">
     <span class="box-title">本ツールについて</span>
     <p style="font-size: 0.9em; color: #555; line-height: 1.6;">
