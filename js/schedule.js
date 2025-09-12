@@ -12,11 +12,11 @@ function scheduleAll() {
 
   const now = new Date();
   const today = now.toISOString().split("T")[0];
-  const todayWeekday = ["日", "月", "火", "水", "木", "金", "土"][now.getDay()];
+  const weekday = ["日", "月", "火", "水", "木", "金", "土"][now.getDay()];
 
   meetings.forEach((meeting, index) => {
     if (skipList.includes(index)) return;
-    if (!meeting.day.includes(todayWeekday)) return;
+    if (!meeting.day.includes(weekday)) return;
 
     const [hour, minute] = meeting.time.split(":").map(Number);
     const target = new Date();
@@ -27,7 +27,12 @@ function scheduleAll() {
 
     const diff = target - now;
     if (diff > 0 && diff <= 180000) { // 3分前以内
-      const entry = { time: meeting.time, title: meeting.title, url: meeting.url };
+      const entry = {
+        time: meeting.time,
+        title: meeting.title,
+        url: meeting.url,
+        status: ""
+      };
 
       // 通知処理
       if (Notification.permission === "granted") {
@@ -38,20 +43,20 @@ function scheduleAll() {
           entry.status = "通知失敗（通知APIエラー）";
         }
       } else {
-        entry.status = "通知失敗（許可されていない可能性）";
+        entry.status = "通知失敗（通知未許可）";
       }
 
       // URL起動処理
       try {
         window.open(meeting.url, "_blank");
-        history[today] = history[today] || [];
-        history[today].push({ ...entry, status: "URL起動成功" });
+        entry.status += "＋URL起動成功";
       } catch {
-        history[today] = history[today] || [];
-        history[today].push({ ...entry, status: "URL起動失敗" });
+        entry.status += "＋URL起動失敗";
       }
 
       // 履歴保存
+      history[today] = history[today] || [];
+      history[today].push(entry);
       localStorage.setItem("history", JSON.stringify(history));
     }
   });
