@@ -25,14 +25,10 @@ h1 {
   font-size: 1.6em;
 }
 
-section {
-  margin-top: 2em;
-}
-
 h2 {
   border-bottom: 1px solid #ccc;
   padding-bottom: 0.3em;
-  margin-bottom: 1em;
+  margin-top: 2em;
   font-size: 1.2em;
 }
 
@@ -82,9 +78,8 @@ table {
 }
 
 th, td {
-  border: 1px solid #ccc;
   padding: 0.5em;
-  text-align: center;
+  text-align: left;
 }
 
 .link-button {
@@ -98,14 +93,6 @@ th, td {
   padding: 0.4em;
   margin: 0.2em 0;
   border-radius: 4px;
-}
-
-#history-list li {
-  background-color: #e0f7ff;
-}
-
-#history-details p {
-  background-color: #f0f0f0;
 }
 
 #debug-output {
