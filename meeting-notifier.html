@@ -6,11 +6,13 @@
   <link rel="stylesheet" href="style/meeting-notifier.css" />
 </head>
 <body>
+  <!-- タイトル枠＋現在時刻 -->
   <div class="title-box">
     <h1>会議通知ツール v2.8.10</h1>
     <span id="clock"></span>
   </div>
 
+  <!-- 会議登録フォーム -->
   <section id="form-section">
     <h2>会議登録と入力方式</h2>
     <form id="meeting-form">
@@ -51,26 +53,37 @@
     <button id="bulk-submit">一括登録</button>
   </section>
 
+  <!-- 本日の通知履歴 -->
   <section id="today-history">
     <h2>本日の通知履歴</h2>
     <ul id="history-list"></ul>
   </section>
 
+  <!-- 過去の通知履歴 -->
   <section id="past-history">
     <h2>過去の通知履歴</h2>
     <details id="history-details"></details>
   </section>
 
+  <!-- 登録済み会議一覧 -->
   <section id="meeting-list">
     <h2>登録済み会議一覧</h2>
     <table>
       <thead>
-        <tr><th>タイトル</th><th>曜日</th><th>時刻</th><th>URL</th><th>起動まで</th><th>操作</th></tr>
+        <tr>
+          <th>タイトル</th>
+          <th>曜日</th>
+          <th>時刻</th>
+          <th>URL</th>
+          <th>起動まで</th>
+          <th>操作</th>
+        </tr>
       </thead>
       <tbody id="meeting-table"></tbody>
     </table>
   </section>
 
+  <!-- デバッグ情報（mode=debug時のみ） -->
   <section id="debug-mode" style="display:none;">
     <h2>デバッグ情報（開発者向け）</h2>
     <details>
@@ -82,6 +95,7 @@
     </details>
   </section>
 
+  <!-- スクリプト -->
   <script src="script/meeting-notifier_storage.js"></script>
   <script src="script/meeting-notifier_notify.js"></script>
   <script src="script/meeting-notifier_debug.js"></script>
