@@ -1,49 +1,21 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>会議通知ツール v2.8.10</title>
-  <link rel="stylesheet" href="style/meeting-notifier.css" />
-</head>
 <body>
+  <!-- 1. 本ツールについて -->
   <header>
     <h1>会議通知ツール v2.8.10</h1>
     <p>このツールはローカル保存型で、サーバー通信は行いません。通知はWindows右下に表示されます。</p>
   </header>
 
+  <!-- 2. 会議登録と入力方式 -->
   <section id="form-section">
-    <h2>会議登録</h2>
+    <h2>会議登録と入力方式</h2>
     <form id="meeting-form">
       <input type="text" name="title" placeholder="タイトル" required />
       <fieldset>
         <legend>曜日</legend>
-        <label><input type="checkbox" name="day" value="月" />月</label>
-        <label><input type="checkbox" name="day" value="火" />火</label>
-        <label><input type="checkbox" name="day" value="水" />水</label>
-        <label><input type="checkbox" name="day" value="木" />木</label>
-        <label><input type="checkbox" name="day" value="金" />金</label>
-        <label><input type="checkbox" name="day" value="土" />土</label>
-        <label><input type="checkbox" name="day" value="日" />日</label>
+        <!-- 月〜日チェックボックス -->
       </fieldset>
       <input type="time" name="time" required />
       <input type="url" name="url" placeholder="URL" required />
-      <fieldset>
-        <legend>通知タイミング</legend>
-        <label><input type="checkbox" name="notify" value="15" />15分前</label>
-        <label><input type="checkbox" name="notify" value="10" />10分前</label>
-        <label><input type="checkbox" name="notify" value="5" />5分前</label>
-        <label><input type="checkbox" name="notify" value="3" checked />3分前</label>
-        <label><input type="checkbox" name="notify" value="1" />1分前</label>
-      </fieldset>
-      <fieldset>
-        <legend>URL起動タイミング</legend>
-        <label><input type="radio" name="launch" value="15" />15分前</label>
-        <label><input type="radio" name="launch" value="10" />10分前</label>
-        <label><input type="radio" name="launch" value="5" />5分前</label>
-        <label><input type="radio" name="launch" value="3" checked />3分前</label>
-        <label><input type="radio" name="launch" value="1" />1分前</label>
-        <label><input type="radio" name="launch" value="0" />開始時</label>
-      </fieldset>
       <button type="submit">登録</button>
     </form>
 
@@ -51,6 +23,32 @@
     <button id="bulk-submit">一括登録</button>
   </section>
 
+  <!-- 3. 通知タイミング -->
+  <section id="notify-section">
+    <h2>通知タイミング</h2>
+    <fieldset>
+      <label><input type="checkbox" name="notify" value="15" />15分前</label>
+      <label><input type="checkbox" name="notify" value="10" />10分前</label>
+      <label><input type="checkbox" name="notify" value="5" />5分前</label>
+      <label><input type="checkbox" name="notify" value="3" checked />3分前</label>
+      <label><input type="checkbox" name="notify" value="1" />1分前</label>
+    </fieldset>
+  </section>
+
+  <!-- 4. URL起動タイミング -->
+  <section id="launch-section">
+    <h2>URL起動タイミング</h2>
+    <fieldset>
+      <label><input type="radio" name="launch" value="15" />15分前</label>
+      <label><input type="radio" name="launch" value="10" />10分前</label>
+      <label><input type="radio" name="launch" value="5" />5分前</label>
+      <label><input type="radio" name="launch" value="3" checked />3分前</label>
+      <label><input type="radio" name="launch" value="1" />1分前</label>
+      <label><input type="radio" name="launch" value="0" />開始時</label>
+    </fieldset>
+  </section>
+
+  <!-- 5. 登録済み会議一覧 -->
   <section id="meeting-list">
     <h2>登録済み会議一覧</h2>
     <table>
@@ -61,18 +59,21 @@
     </table>
   </section>
 
+  <!-- 6. 本日の通知履歴 -->
   <section id="today-history">
     <h2>本日の通知履歴</h2>
     <ul id="history-list"></ul>
   </section>
 
+  <!-- 7. 過去の通知履歴 -->
   <section id="past-history">
     <h2>過去の通知履歴</h2>
     <details id="history-details"></details>
   </section>
 
+  <!-- 8. デバッグ情報 -->
   <section id="debug-mode" style="display:none;">
-    <h2>デバッグモード</h2>
+    <h2>デバッグ情報（開発者向け）</h2>
     <details>
       <summary>localStorage 状態</summary>
       <pre id="debug-output"></pre>
@@ -81,10 +82,4 @@
       <button id="debug-refresh">更新</button>
     </details>
   </section>
-
-  <script src="script/meeting-notifier_storage.js"></script>
-  <script src="script/meeting-notifier_notify.js"></script>
-  <script src="script/meeting-notifier_debug.js"></script>
-  <script src="script/meeting-notifier_main.js"></script>
 </body>
-</html>
