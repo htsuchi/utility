@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)https://htsuchi.github.io/utility/notification.html -->
+<html lang="ja" style="--vsc-domain: &quot;htsuchi.github.io&quot;;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>会議通知ツール v2.8.6</title>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    table {
+      border-collapse: collapse;
+      margin: 10px auto;
+      width: 1730px;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      text-align: left;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    th { background-color: #f0f0f0; }
+    ul { margin-left: 40px; }
+    .success { color: green; }
+    .failure { color: red; }
+    details { margin-top: 20px; }
+    .boxWithTitle {
+      position: relative;
+      margin: 2em 0;
+      padding: 1em;
+      border: solid 2px #95ccff;
+      border-radius: 8px;
+      background: #f9f9ff;
+    }
+    .boxWithTitle .box-title {
+      position: absolute;
+      top: -13px;
+      left: 15px;
+      padding: 0 10px;
+      font-size: 16px;
+      background: #fff;
+      color: #95ccff;
+      font-weight: bold;
+    }
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      z-index: 9999;
+    }
+    #clockDisplay {
+      font-size: 0.7em;
+      margin-left: 10px;
+      color: #666;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <h1>会議通知ツール v2.8.6 <span id="clockDisplay">2025年09月12日(金) 11:53:48</span></h1>
+  <div class="boxWithTitle">
+    <span class="box-title">本ツールについて</span>
+    <p style="font-size: 0.9em; color: #555; line-height: 1.6;">
+      このツールは、定期的な会議の開始時刻に合わせて通知を表示し、指定されたURLを自動で起動する支援ツールです。<br>
+      通知タイミングや起動タイミングは自由に設定でき、複数の会議を一括管理できます。<br>
+      ブラウザ上で動作し、保存された情報はローカルに保持されます。
+    </p>
+  </div>
+  <div id="toast"></div>
+
+    <div class="boxWithTitle" id="inputArea">
+    <span class="box-title">会議登録と入力方式</span>
+    <button onclick="switchMode(&#39;text&#39;)">一括登録に便利（CSV風）</button>
+    <button onclick="switchMode(&#39;form&#39;)">1件ずつ丁寧に登録</button>
+    <p>入力方式はいつでも切り替え可能です。保存内容は共通です。</p>
+    <div id="inputFields"></div>
+  </div>
+
+  <div class="boxWithTitle" id="settingsArea">
+    <span class="box-title">通知タイミング</span>
+    <label><input type="checkbox" value="15">15分前</label>
+    <label><input type="checkbox" value="10">10分前</label>
+    <label><input type="checkbox" value="5">5分前</label>
+    <label><input type="checkbox" value="3" checked="">3分前</label>
+    <label><input type="checkbox" value="1">1分前</label>
+  </div>
+
+  <div class="boxWithTitle">
+    <span class="box-title">URL起動タイミング</span>
+    <label><input type="radio" name="launch" value="15">15分前</label>
+    <label><input type="radio" name="launch" value="10">10分前</label>
+    <label><input type="radio" name="launch" value="5">5分前</label>
+    <label><input type="radio" name="launch" value="3" checked="">3分前</label>
+    <label><input type="radio" name="launch" value="1">1分前</label>
+    <label><input type="radio" name="launch" value="0">開始時</label>
+    <p style="margin-top:10px;">通知は複数回届きます。URLは1回だけ自動起動されます。</p>
+  </div>
+
+    <div class="boxWithTitle">
+    <span class="box-title">登録済み会議一覧</span>
+    <table id="meetingTable">
+      <colgroup>
+        <col style="width:700px">
+        <col style="width:200px">
+        <col style="width:120px">
+        <col style="width:120px">
+        <col style="width:120px">
+        <col style="width:230px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>タイトル</th>
+          <th>曜日</th>
+          <th>時刻</th>
+          <th>URL</th>
+          <th>操作</th>
+          <th>起動までの時間</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="boxWithTitle">
+    <span class="box-title">本日の通知履歴</span>
+    <details open="">
+      <summary>今日の履歴</summary>
+      <ul id="todayHistoryList"></ul>
+    </details>
+  </div>
+
+  <div class="boxWithTitle">
+    <span class="box-title">過去の通知履歴</span>
+    <details>
+      <summary>過去7日間の履歴</summary>
+      <ul id="historyList"></ul>
+    </details>
+  </div>
+
+    <script>
+    function updateClock() {
+      const now = new Date();
+      const days = ["日", "月", "火", "水", "木", "金", "土"];
+      const str = `${now.getFullYear()}年${String(now.getMonth()+1).padStart(2,"0")}月${String(now.getDate()).padStart(2,"0")}日(${days[now.getDay()]}) ${now.toLocaleTimeString()}`;
+      document.getElementById("clockDisplay").textContent = str;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    let editingIndex = null;
+    const launchHistory = new Set();
+
+    function switchMode(mode, meeting = null, index = null) {
+      const area = document.getElementById("inputFields");
+      area.innerHTML = "";
+      editingIndex = index;
+
+      if (mode === "text") {
+        const saved = JSON.parse(localStorage.getItem("meetings") || "[]");
+        const csv = saved.map(m => `${m.title},${m.day},${m.time},${m.url}`).join("\n");
+        area.innerHTML = `<textarea id="textInput" rows="5" cols="50" placeholder="タイトル,曜日,時刻,URL を改行区切りで入力">${csv}</textarea>
+        <button onclick="saveText()">保存</button>`;
+      } else {
+        area.innerHTML = `
+          <label>タイトル<br><input id="title" placeholder="タイトル" value="${meeting?.title || ''}"></label><br>
+          <label>曜日（複数選択可）<br>
+            <label><input type="checkbox" name="day" value="月">月</label>
+            <label><input type="checkbox" name="day" value="火">火</label>
+            <label><input type="checkbox" name="day" value="水">水</label>
+            <label><input type="checkbox" name="day" value="木">木</label>
+            <label><input type="checkbox" name="day" value="金">金</label>
+            <label><input type="checkbox" name="day" value="土">土</label>
+            <label><input type="checkbox" name="day" value="日">日</label>
+            <label><input type="checkbox" name="day" value="本日のみ">本日のみ</label>
+          </label><br>
+          <label>時刻<br><input id="time" type="time" value="${meeting?.time || ''}"></label><br>
+          <label>URL<br><input id="url" placeholder="URL" style="width:600px" value="${meeting?.url || ''}"></label><br>
+          <button onclick="saveForm()">保存</button>
+        `;
+
+        // 曜日選択補正ロジック
+        document.querySelectorAll('input[name="day"]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const isTodayOnly = document.querySelector('input[value="本日のみ"]').checked;
+            if (isTodayOnly) {
+              document.querySelectorAll('input[name="day"]').forEach(cb2 => {
+                if (cb2.value !== "本日のみ") cb2.checked = false;
+              });
+            } else {
+              const others = Array.from(document.querySelectorAll('input[name="day"]:checked'))
+                .filter(cb => cb.value !== "本日のみ");
+              if (others.length === 0) {
+                document.querySelector('input[value="本日のみ"]').checked = true;
+              }
+            }
+          });
+        });
+      }
+    }
+
+          function saveForm() {
+      const dayCheckboxes = document.querySelectorAll('input[name="day"]');
+      let selectedDays = Array.from(dayCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+
+      if (selectedDays.length === 0) {
+        selectedDays = ["本日のみ"];
+        document.querySelector('input[value="本日のみ"]').checked = true;
+      }
+
+      if (selectedDays.includes("本日のみ")) {
+        selectedDays = ["本日のみ"];
+        dayCheckboxes.forEach(cb => {
+          cb.checked = (cb.value === "本日のみ");
+        });
+      }
+
+      let url = document.getElementById("url").value.trim();
+      if (!url.match(/^https?:\/\//)) {
+        url = "https://" + url.replace(/^https?\/?\/?/, "");
+      }
+
+      const meeting = {
+        title: document.getElementById("title").value,
+        day: selectedDays.join("/"),
+        time: document.getElementById("time").value,
+        url: url,
+        savedDate: new Date().toISOString().split("T")[0]
+      };
+
+      const saved = JSON.parse(localStorage.getItem("meetings") || "[]");
+      if (editingIndex !== null) {
+        saved[editingIndex] = meeting;
+        editingIndex = null;
+      } else {
+        saved.push(meeting);
+      }
+
+      localStorage.setItem("meetings", JSON.stringify(saved));
+      renderSettings(saved);
+      scheduleAll(saved);
+    }
+
+    function saveText() {
+      const lines = document.getElementById("textInput").value.trim().split("\n");
+      const meetings = [];
+      let hasError = false;
+
+      lines.forEach((line, i) => {
+        const parts = line.split(",");
+        if (parts.length !== 4 || parts.some(p => !p.trim())) {
+          showToast(`第${i+1}行に不正な形式があります。登録を中止しました`);
+          hasError = true;
+          return;
+        }
+        const [title, day, time, rawUrl] = parts;
+        let url = rawUrl.trim();
+        if (!url.match(/^https?:\/\//)) {
+          url = "https://" + url.replace(/^https?\/?\/?/, "");
+        }
+        meetings.push({ title, day, time, url, savedDate: new Date().toISOString().split("T")[0] });
+      });
+
+      if (!hasError) {
+        localStorage.setItem("meetings", JSON.stringify(meetings));
+        renderSettings(meetings);
+        scheduleAll(meetings);
+      }
+    }
+
+          function getRemainingTime(meetingTime, offsetMinutes) {
+      const launchAt = new Date(meetingTime.getTime() - offsetMinutes * 60000);
+      const now = new Date();
+      const diff = launchAt - now;
+      if (diff <= 0) return "終了";
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      return `残り ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    }
+
+    function renderSettings(meetings) {
+      const tbody = document.querySelector("#meetingTable tbody");
+      tbody.innerHTML = "";
+      const today = new Date();
+      const weekdayMap = { "日": 0, "月": 1, "火": 2, "水": 3, "木": 4, "金": 5, "土": 6 };
+      const todayNum = today.getDay();
+      const launchOffset = getLaunchTime();
+
+      meetings.forEach((meeting, index) => {
+        const tr = document.createElement("tr");
+        const meetingDays = meeting.day.split("/").map(d => weekdayMap[d.trim()]);
+        const [hour, minute] = meeting.time.split(":").map(Number);
+        const meetingTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
+        let timeInfo = "";
+
+        if (meeting.day === "本日のみ" || meetingDays.includes(todayNum)) {
+          timeInfo = getRemainingTime(meetingTime, launchOffset);
+        }
+
+        tr.innerHTML = `
+          <td>${truncateTitle(meeting.title)}</td>
+          <td>${meeting.day}</td>
+          <td>${meeting.time}</td>
+          <td><a href="${meeting.url}" target="_blank">リンク</a></td>
+          <td>
+            <button onclick="editMeeting(${index})">✏️</button>
+            <button onclick="deleteMeeting(${index})">🗑️</button>
+          </td>
+          <td class="countdown">${timeInfo}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateCountdowns() {
+      const rows = document.querySelectorAll("#meetingTable tbody tr");
+      const today = new Date();
+      const weekdayMap = { "日": 0, "月": 1, "火": 2, "水": 3, "木": 4, "金": 5, "土": 6 };
+      const todayNum = today.getDay();
+      const launchOffset = getLaunchTime();
+
+      rows.forEach(row => {
+        const dayText = row.children[1].textContent;
+        const timeText = row.children[2].textContent;
+        const meetingDays = dayText.split("/").map(d => weekdayMap[d.trim()]);
+        const cell = row.querySelector(".countdown");
+
+        if (!(dayText === "本日のみ" || meetingDays.includes(todayNum))) {
+          cell.textContent = "";
+          return;
+        }
+
+        const [hour, minute] = timeText.split(":").map(Number);
+        const meetingTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
+        cell.textContent = getRemainingTime(meetingTime, launchOffset);
+      });
+    }
+
+    setInterval(updateCountdowns, 1000);
+
+          function getNotifyTimes() {
+      const checkboxes = document.querySelectorAll('#settingsArea input[type="checkbox"]:checked');
+      return Array.from(checkboxes).map(cb => parseInt(cb.value));
+    }
+
+    function getLaunchTime() {
+      const radio = document.querySelector('input[name="launch"]:checked');
+      if (!radio) {
+        document.querySelector('input[value="3"]').checked = true;
+        return 3;
+      }
+      return parseInt(radio.value);
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.style.opacity = 1;
+      setTimeout(() => {
+        toast.style.opacity = 0;
+      }, 3000);
+    }
+
+    function scheduleAll(meetings) {
+      const notifyTimes = getNotifyTimes();
+      const launchTime = getLaunchTime();
+      const today = new Date();
+      const weekdayMap = { "日": 0, "月": 1, "火": 2, "水": 3, "木": 4, "金": 5, "土": 6 };
+
+      meetings.forEach(meeting => {
+        const meetingDays = meeting.day.split("/").map(d => weekdayMap[d.trim()]);
+        const isToday = meeting.day === "本日のみ" || meetingDays.includes(today.getDay());
+        if (isToday) {
+          const [hour, minute] = meeting.time.split(":").map(Number);
+          const meetingTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hour, minute);
+
+          notifyTimes.forEach(min => {
+            const notifyAt = new Date(meetingTime.getTime() - min * 60000);
+            if (notifyAt > new Date()) {
+              setTimeout(() => {
+                if (Notification.permission === "granted") {
+                  new Notification(`${meeting.title} 開始まであと${min}分`, { body: meeting.url });
+                  logHistory(meeting, `通知成功（${min}分前）`);
+                } else {
+                  logHistory(meeting, `通知失敗（許可されていない可能性）`);
+                  showToast(`${meeting.title} の通知に失敗しました`);
+                }
+              }, notifyAt.getTime() - Date.now());
+            }
+          });
+
+          const launchAt = new Date(meetingTime.getTime() - launchTime * 60000);
+          const launchKey = `${launchAt.toISOString()}|${meeting.url}`;
+          if (!launchHistory.has(launchKey) && launchAt > new Date()) {
+            launchHistory.add(launchKey);
+            setTimeout(() => {
+              const win = window.open(meeting.url);
+              const status = win ? "URL起動成功" : "URL起動失敗（ポップアップブロックの可能性）";
+              logHistory(meeting, status);
+            }, launchAt.getTime() - Date.now());
+          }
+        }
+      });
+    }
+
+    function logHistory(meeting, status) {
+      const todayKey = new Date().toISOString().split("T")[0];
+      const history = JSON.parse(localStorage.getItem("history") || "{}");
+      history[todayKey] = history[todayKey] || [];
+      history[todayKey].push({
+        time: new Date().toLocaleTimeString(),
+        title: meeting.title,
+        url: meeting.url,
+        status
+      });
+      localStorage.setItem("history", JSON.stringify(history));
+      renderHistory(todayKey, history[todayKey]);
+    }
+
+    function renderHistory(dateKey, entries) {
+      const list = document.getElementById("todayHistoryList");
+      list.innerHTML = "";
+      entries.forEach(item => {
+        const li = document.createElement("li");
+        li.className = item.status.includes("成功") ? "success" : "failure";
+        li.innerHTML = `${item.time} - ${item.title} (<a href="${item.url}" target="_blank" rel="noopener">${item.status}</a>)`;
+        list.appendChild(li);
+      });
+    }
+
+          const todayStr = new Date().toISOString().split("T")[0];
+    const savedMeetings = localStorage.getItem("meetings");
+    if (savedMeetings) {
+      let meetings = JSON.parse(savedMeetings);
+      meetings = meetings.filter(m => {
+        if (m.day === "本日のみ") {
+          return m.savedDate === todayStr;
+        }
+        return true;
+      });
+      localStorage.setItem("meetings", JSON.stringify(meetings));
+      renderSettings(meetings);
+      scheduleAll(meetings);
+    }
+
+    const todayKey = todayStr;
+    const history = JSON.parse(localStorage.getItem("history") || "{}");
+    if (history[todayKey]) {
+      renderHistory(todayKey, history[todayKey]);
+    }
+
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          console.log("通知が許可されました");
+        } else {
+          console.warn("通知は拒否されました");
+        }
+      });
+    }
+
+    switchMode('form');
+  </script>
+
+  
+
+</body></html>
