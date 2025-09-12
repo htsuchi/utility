@@ -176,4 +176,36 @@ function renderTodayHistory() {
   records.forEach(entry => {
     const li = document.createElement("li");
     li.textContent = `${entry.time} ${entry.status}：${entry.title || entry.url}`;
-    li.style.backgroundColor = entry.status.includes("成功") ? "#e0ffe0" : "#ffe0e
+    li.style.backgroundColor = entry.status.includes("成功") ? "#e0ffe0" : "#ffe0e0";
+    list.appendChild(li);
+  });
+}
+
+function renderPastHistory() {
+  const container = document.getElementById("history-details");
+  container.innerHTML = "";
+
+  const history = loadHistory();
+  const today = new Date().toISOString().split("T")[0];
+
+  const pastDates = Object.keys(history)
+    .filter(date => date !== today)
+    .sort()
+    .reverse();
+
+  pastDates.forEach(date => {
+    const detail = document.createElement("details");
+    const summary = document.createElement("summary");
+    summary.textContent = date;
+    detail.appendChild(summary);
+
+    history[date].forEach(entry => {
+      const p = document.createElement("p");
+      p.textContent = `${entry.time} ${entry.status}：${entry.title || entry.url}`;
+      p.style.backgroundColor = entry.status.includes("成功") ? "#e0ffe0" : "#ffe0e0";
+      detail.appendChild(p);
+    });
+
+    container.appendChild(detail);
+  });
+}
