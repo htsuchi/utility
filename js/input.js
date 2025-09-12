@@ -1,5 +1,6 @@
 function switchMode(mode, meeting = null, index = null) {
   const area = document.getElementById("inputArea");
+
   if (mode === "form") {
     const selectedDays = meeting?.day?.split("/") || [];
     const dayOptions = ["月", "火", "水", "木", "金", "土", "日"];
@@ -8,13 +9,17 @@ function switchMode(mode, meeting = null, index = null) {
       return `<label><input type="checkbox" name="day" value="${day}" ${checked}>${day}</label>`;
     }).join("");
 
+    // 🔧 追加：編集時のスキップ状態を反映
+    const skipList = JSON.parse(localStorage.getItem("skipToday") || "[]");
+    const skipChecked = index !== null && skipList.includes(index) ? "checked" : "";
+
     area.innerHTML = `
       <table class="formTable">
         <tr><th>タイトル</th><td><input id="title" style="width:400px" value="${meeting?.title || ''}"></td></tr>
         <tr><th>曜日（複数選択可）</th><td>${dayCheckboxes}</td></tr>
         <tr><th>開始時刻</th><td><input id="time" type="time" value="${meeting?.time || ''}"></td></tr>
         <tr><th>URL</th><td><input id="url" style="width:600px" value="${meeting?.url || ''}"></td></tr>
-        <tr><th>本日はスキップ</th><td><input type="checkbox" id="skipTodayForm"></td></tr>
+        <tr><th>本日はスキップ</th><td><input type="checkbox" id="skipTodayForm" ${skipChecked}></td></tr>
       </table>
       <button onclick="saveForm(${index})">保存</button>
     `;
@@ -22,7 +27,7 @@ function switchMode(mode, meeting = null, index = null) {
     const csv = (localStorage.getItem("meetings") || "[]")
       .replace(/^\[/, "").replace(/\]$/, "").replace(/},{/g, "}\n{");
     area.innerHTML = `
-      <textarea id="textInput" rows="20" cols="150" placeholder="タイトル,曜日,時刻,URL を改行区切りで入力">${csv}</textarea>
+      <textarea id="textInput" rows="20" cols="150" placeholder="タイトル,曜日,開始時刻,URL を改行区切りで入力">${csv}</textarea>
       <button onclick="saveText()">保存</button>
     `;
   }
@@ -37,17 +42,22 @@ function saveForm(index = null) {
 
   const meeting = { title, day: days, time, url };
   const meetings = JSON.parse(localStorage.getItem("meetings") || "[]");
+
   if (index !== null) {
     meetings[index] = meeting;
   } else {
     meetings.push(meeting);
   }
   localStorage.setItem("meetings", JSON.stringify(meetings));
-  if (skipToday) {
-    const skipList = JSON.parse(localStorage.getItem("skipToday") || "[]");
-    skipList.push(meetings.length - 1);
-    localStorage.setItem("skipToday", JSON.stringify(skipList));
-  }
+
+  // 🔧 スキップ状態の保存・更新
+  const skipList = JSON.parse(localStorage.getItem("skipToday") || "[]");
+  const targetIndex = index !== null ? index : meetings.length - 1;
+  const updated = skipToday
+    ? [...new Set([...skipList, targetIndex])]
+    : skipList.filter(i => i !== targetIndex);
+  localStorage.setItem("skipToday", JSON.stringify(updated));
+
   location.reload();
 }
 
