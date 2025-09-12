@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   initializeForm();
+  updateClock();
+  setInterval(updateClock, 1000);
+
   renderTodayHistory();
   renderPastHistory();
   renderMeetingList();
@@ -13,6 +16,22 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("meeting-form").addEventListener("submit", handleFormSubmit);
   document.getElementById("bulk-submit").addEventListener("click", handleBulkSubmit);
 });
+
+function updateClock() {
+  const now = new Date();
+  const days = ["日", "月", "火", "水", "木", "金", "土"];
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const day = days[now.getDay()];
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mi = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+
+  const formatted = `${yyyy}年${mm}月${dd}日（${day}） ${hh}:${mi}:${ss}`;
+  const clock = document.getElementById("clock");
+  if (clock) clock.textContent = formatted;
+}
 
 function handleFormSubmit(event) {
   event.preventDefault();
