@@ -1,11 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
-  initializeForm();
   updateClock();
   setInterval(updateClock, 1000);
 
+  initializeForm();
+  renderMeetingList();
   renderTodayHistory();
   renderPastHistory();
-  renderMeetingList();
 
   if (location.search.includes("mode=debug")) {
     document.getElementById("debug-mode").style.display = "block";
@@ -27,10 +27,18 @@ function updateClock() {
   const hh = String(now.getHours()).padStart(2, "0");
   const mi = String(now.getMinutes()).padStart(2, "0");
   const ss = String(now.getSeconds()).padStart(2, "0");
-
   const formatted = `${yyyy}年${mm}月${dd}日（${day}） ${hh}:${mi}:${ss}`;
   const clock = document.getElementById("clock");
   if (clock) clock.textContent = formatted;
+}
+
+function initializeForm() {
+  // 初期化時に3分前チェックを入れておく
+  const notifyDefault = document.querySelector("input[name='notify'][value='3']");
+  if (notifyDefault) notifyDefault.checked = true;
+
+  const launchDefault = document.querySelector("input[name='launch'][value='3']");
+  if (launchDefault) launchDefault.checked = true;
 }
 
 function handleFormSubmit(event) {
@@ -51,7 +59,7 @@ function handleFormSubmit(event) {
   saveMeetings(meetings);
   renderMeetingList();
   form.reset();
-  form.querySelector("input[value='3']").checked = true;
+  initializeForm();
 }
 
 function handleBulkSubmit() {
@@ -164,8 +172,8 @@ function collectFormData(form) {
   const time = form.time.value;
   const url = form.url.value.trim();
   const days = Array.from(form.querySelectorAll("input[name='day']:checked")).map(el => el.value);
-  const notify = Array.from(form.querySelectorAll("input[name='notify']:checked")).map(el => el.value);
-  const launch = form.querySelector("input[name='launch']:checked")?.value || "3";
+  const notify = Array.from(document.querySelectorAll("input[name='notify']:checked")).map(el => el.value);
+  const launch = document.querySelector("input[name='launch']:checked")?.value || "3";
   const correctedUrl = url.startsWith("http") ? url : "https://" + url;
 
   if (!title || !time || !url || days.length === 0) {
