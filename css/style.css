@@ -1,0 +1,58 @@
+body {
+  font-family: sans-serif;
+  margin: 20px;
+}
+
+h1 {
+  font-size: 1.5em;
+}
+
+#clockDisplay {
+  font-size: 0.8em;
+  margin-left: 10px;
+  color: #666;
+  vertical-align: middle;
+}
+
+#meetingTable {
+  table-layout: fixed;
+  width: auto;
+  max-width: 920px;
+}
+
+#meetingTable th, #meetingTable td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+#meetingTable th {
+  background-color: #f0f0f0;
+}
+
+.boxWithTitle {
+  position: relative;
+  margin: 2em 0;
+  padding: 1em;
+  border: solid 2px #95ccff;
+  border-radius: 8px;
+  background: #f9f9ff;
+  max-width: 960px;
+}
+
+.boxWithTitle .box-title {
+  position: absolute;
+  top: -13px;
+  left: 15px;
+  padding: 0 10px;
+  font-size: 16px;
+  background: #fff;
+  color: #95ccff;
+  font-weight: bold;
+}
+
+.success { color: green; }
+.failure { color: red; }
