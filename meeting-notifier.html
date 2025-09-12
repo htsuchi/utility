@@ -6,44 +6,104 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <h1>会議通知ツール v2.8.7</h1>
+  <h1>
+    会議通知ツール v2.8.7
+    <span id="clockDisplay"></span>
+  </h1>
 
-  <h2>
-    会議登録と入力方式
-    <span class="section-note">（1件ずつ または 一括登録が可能です）</span>
-  </h2>
-  <div id="inputArea"></div>
+  <!-- 本ツールについて（変更なし） -->
+  <div class="boxWithTitle" id="aboutBox">
+    <span class="box-title">本ツールについて</span>
+    <button onclick="toggleAbout()">表示／非表示</button>
+    <div id="aboutContent">
+      <p>
+        このツールは、定期的な会議の開始時刻に合わせて通知を表示し、指定されたURLを自動で起動する支援ツールです。<br>
+        通知タイミングや起動タイミングは自由に設定でき、複数の会議を一括管理できます。<br>
+        ブラウザ上で動作し、保存された情報はローカルに保持されます。
+      </p>
+    </div>
+  </div>
 
-  <h2>
-    通知タイミング
-    <span class="section-note">（開始時刻の3分前に通知されます）</span>
-  </h2>
+  <!-- 会議一覧（v2.8.7: スキップ状態表示列を追加） -->
+  <div class="boxWithTitle">
+    <span class="box-title">登録済み会議一覧</span>
+    <table id="meetingTable">
+      <colgroup>
+        <col style="width:240px">
+        <col style="width:160px">
+        <col style="width:100px">
+        <col style="width:120px">
+        <col style="width:120px">
+        <col style="width:180px">
+        <!-- v2.8.7追加 -->
+        <col style="width:120px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>タイトル</th>
+          <th>曜日</th>
+          <th>時刻</th>
+          <th>URL</th>
+          <th>操作</th>
+          <th>起動までの時間</th>
+          <!-- v2.8.7追加 -->
+          <th>本日はスキップ</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  <h2>
-    URL起動タイミング
-    <span class="section-note">（通知と同時にURLを自動起動します）</span>
-  </h2>
+  <!-- 入力方式（変更なし） -->
+  <div class="boxWithTitle">
+    <span class="box-title">会議登録と入力方式</span>
+    <button onclick="switchMode('text')">一括登録（CSV風）</button>
+    <button onclick="switchMode('form')">1件ずつ登録</button>
+    <p>入力方式はいつでも切り替え可能です。保存内容は共通です。</p>
+    <div id="inputFields"></div>
+  </div>
 
-  <table>
-    <colgroup>
-      <col style="width:200px">
-      <col style="width:150px">
-      <col style="width:200px">
-      <col style="width:150px">
-      <col style="width:150px">
-    </colgroup>
-    <thead>
-      <tr>
-        <th>タイトル</th>
-        <th>開始時刻</th>
-        <th>曜日</th>
-        <th>起動までの時間</th>
-        <th>本日はスキップ</th>
-      </tr>
-    </thead>
-    <tbody id="meetingList"></tbody>
-  </table>
+  <!-- 通知タイミング（変更なし） -->
+  <div class="boxWithTitle" id="settingsArea">
+    <span class="box-title">通知タイミング</span>
+    <label><input type="checkbox" value="15">15分前</label>
+    <label><input type="checkbox" value="10">10分前</label>
+    <label><input type="checkbox" value="5">5分前</label>
+    <label><input type="checkbox" value="3" checked>3分前</label>
+    <label><input type="checkbox" value="1">1分前</label>
+    <p>通知は複数回通知可能です。</p>
+  </div>
 
+  <!-- URL起動タイミング（変更なし） -->
+  <div class="boxWithTitle">
+    <span class="box-title">URL起動タイミング</span>
+    <label><input type="radio" name="launch" value="15">15分前</label>
+    <label><input type="radio" name="launch" value="10">10分前</label>
+    <label><input type="radio" name="launch" value="5">5分前</label>
+    <label><input type="radio" name="launch" value="3" checked>3分前</label>
+    <label><input type="radio" name="launch" value="1">1分前</label>
+    <label><input type="radio" name="launch" value="0">開始時</label>
+    <p>URLは1回だけ自動起動されます。</p>
+  </div>
+
+  <!-- 通知履歴（v2.8.7: 構造化表示に対応） -->
+  <div class="boxWithTitle">
+    <span class="box-title">本日の通知履歴</span>
+    <button onclick="toggleHistory()">表示／非表示</button>
+    <table id="historyTable" style="display: block;">
+      <thead>
+        <tr>
+          <th>時刻</th>
+          <th>タイトル</th>
+          <th>URL</th>
+          <th>ステータス</th>
+        </tr>
+      </thead>
+      <tbody id="todayHistoryList"></tbody>
+    </table>
+  </div>
+
+  <!-- デバッグ表示（v2.8.7: 折りたたみ構造に変更） -->
   <div class="boxWithTitle" id="debugBox" style="display:none;">
     <span class="box-title">デバッグモード：localStorage内容</span>
     <div id="debugContent"></div>
