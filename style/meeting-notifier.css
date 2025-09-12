@@ -1,6 +1,7 @@
 body {
   font-family: sans-serif;
-  margin: 2em;
+  margin: 2em auto;
+  max-width: 800px;
   background-color: #f9f9f9;
   color: #333;
 }
@@ -8,11 +9,13 @@ body {
 header h1 {
   font-size: 1.8em;
   margin-bottom: 0.2em;
+  text-align: center;
 }
 
 header p {
   font-size: 0.95em;
   color: #666;
+  text-align: center;
 }
 
 section {
@@ -23,6 +26,7 @@ h2 {
   border-bottom: 1px solid #ccc;
   padding-bottom: 0.3em;
   margin-bottom: 1em;
+  font-size: 1.2em;
 }
 
 form input[type="text"],
@@ -87,6 +91,14 @@ th, td {
   padding: 0.4em;
   margin: 0.2em 0;
   border-radius: 4px;
+}
+
+#history-list li {
+  background-color: #e0f7ff;
+}
+
+#history-details p {
+  background-color: #f0f0f0;
 }
 
 #debug-output {
