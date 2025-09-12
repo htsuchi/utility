@@ -1,58 +1,76 @@
 body {
   font-family: sans-serif;
-  margin: 20px;
+  margin: 2em;
 }
 
 h1 {
   font-size: 1.5em;
+  margin-bottom: 1em;
 }
 
-#clockDisplay {
-  font-size: 0.8em;
-  margin-left: 10px;
-  color: #666;
-  vertical-align: middle;
+.section-note {
+  font-size: 0.9em;
+  color: #888;
+  margin-left: 0.5em;
 }
 
-#meetingTable {
-  table-layout: fixed;
-  width: auto;
-  max-width: 920px;
+table {
+  border-collapse: collapse;
+  margin-top: 1em;
+  width: 100%;
 }
 
-#meetingTable th, #meetingTable td {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 6px 10px;
+th, td {
   border: 1px solid #ccc;
+  padding: 6px;
   text-align: left;
 }
 
-#meetingTable th {
-  background-color: #f0f0f0;
+.formTable {
+  border-collapse: collapse;
+  margin-top: 1em;
+}
+
+.formTable th {
+  text-align: left;
+  padding: 6px;
+  background: #f0f0f0;
+  vertical-align: top;
+}
+
+.formTable td {
+  padding: 6px;
 }
 
 .boxWithTitle {
-  position: relative;
-  margin: 2em 0;
+  margin-top: 2em;
   padding: 1em;
-  border: solid 2px #95ccff;
-  border-radius: 8px;
-  background: #f9f9ff;
-  max-width: 960px;
+  border: 1px solid #ccc;
+  background: #fffbe6;
 }
 
-.boxWithTitle .box-title {
-  position: absolute;
-  top: -13px;
-  left: 15px;
-  padding: 0 10px;
-  font-size: 16px;
-  background: #fff;
-  color: #95ccff;
+.box-title {
   font-weight: bold;
+  display: block;
+  margin-bottom: 0.5em;
 }
 
-.success { color: green; }
-.failure { color: red; }
+#debugBox details {
+  margin-bottom: 1em;
+  border: 1px solid #ccc;
+  padding: 0.5em;
+  background: #fefefe;
+}
+
+#debugBox summary {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#debugContent pre {
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 0.9em;
+  max-height: 400px;
+  overflow: auto;
+}
