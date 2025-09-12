@@ -2,68 +2,15 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>会議通知ツール v2.8.10</title>
+  <title>会議通知ツール v2.8.11</title>
   <link rel="stylesheet" href="style/meeting-notifier.css" />
 </head>
 <body>
-  <!-- タイトル枠＋現在時刻 -->
+  <!-- タイトル領域（枠付き＋現在時刻） -->
   <div class="title-box">
-    <h1>会議通知ツール v2.8.10</h1>
+    <h1>会議通知ツール v2.8.11</h1>
     <span id="clock"></span>
   </div>
-
-  <!-- 会議登録フォーム -->
-  <section id="form-section">
-    <h2>会議登録と入力方式</h2>
-    <form id="meeting-form">
-      <input type="text" name="title" placeholder="タイトル" required />
-      <fieldset>
-        <legend>曜日</legend>
-        <label><input type="checkbox" name="day" value="月" />月</label>
-        <label><input type="checkbox" name="day" value="火" />火</label>
-        <label><input type="checkbox" name="day" value="水" />水</label>
-        <label><input type="checkbox" name="day" value="木" />木</label>
-        <label><input type="checkbox" name="day" value="金" />金</label>
-        <label><input type="checkbox" name="day" value="土" />土</label>
-        <label><input type="checkbox" name="day" value="日" />日</label>
-      </fieldset>
-      <input type="time" name="time" required />
-      <input type="url" name="url" placeholder="URL" required />
-      <fieldset>
-        <legend>通知タイミング</legend>
-        <label><input type="checkbox" name="notify" value="15" />15分前</label>
-        <label><input type="checkbox" name="notify" value="10" />10分前</label>
-        <label><input type="checkbox" name="notify" value="5" />5分前</label>
-        <label><input type="checkbox" name="notify" value="3" checked />3分前</label>
-        <label><input type="checkbox" name="notify" value="1" />1分前</label>
-      </fieldset>
-      <fieldset>
-        <legend>URL起動タイミング</legend>
-        <label><input type="radio" name="launch" value="15" />15分前</label>
-        <label><input type="radio" name="launch" value="10" />10分前</label>
-        <label><input type="radio" name="launch" value="5" />5分前</label>
-        <label><input type="radio" name="launch" value="3" checked />3分前</label>
-        <label><input type="radio" name="launch" value="1" />1分前</label>
-        <label><input type="radio" name="launch" value="0" />開始時</label>
-      </fieldset>
-      <button type="submit">登録</button>
-    </form>
-
-    <textarea id="bulk-input" placeholder="タイトル,曜日,時刻,URL"></textarea>
-    <button id="bulk-submit">一括登録</button>
-  </section>
-
-  <!-- 本日の通知履歴 -->
-  <section id="today-history">
-    <h2>本日の通知履歴</h2>
-    <ul id="history-list"></ul>
-  </section>
-
-  <!-- 過去の通知履歴 -->
-  <section id="past-history">
-    <h2>過去の通知履歴</h2>
-    <details id="history-details"></details>
-  </section>
 
   <!-- 登録済み会議一覧 -->
   <section id="meeting-list">
@@ -81,6 +28,67 @@
       </thead>
       <tbody id="meeting-table"></tbody>
     </table>
+  </section>
+
+  <!-- 会議登録フォーム -->
+  <section id="form-section">
+    <h2>会議登録</h2>
+    <form id="meeting-form">
+      <input type="text" name="title" placeholder="タイトル" required />
+      <fieldset>
+        <legend>曜日</legend>
+        <label><input type="checkbox" name="day" value="月" />月</label>
+        <label><input type="checkbox" name="day" value="火" />火</label>
+        <label><input type="checkbox" name="day" value="水" />水</label>
+        <label><input type="checkbox" name="day" value="木" />木</label>
+        <label><input type="checkbox" name="day" value="金" />金</label>
+        <label><input type="checkbox" name="day" value="土" />土</label>
+        <label><input type="checkbox" name="day" value="日" />日</label>
+      </fieldset>
+      <input type="time" name="time" required />
+      <input type="url" name="url" placeholder="URL" required />
+      <button type="submit">登録</button>
+    </form>
+
+    <textarea id="bulk-input" placeholder="タイトル,曜日,時刻,URL"></textarea>
+    <button id="bulk-submit">一括登録</button>
+  </section>
+
+  <!-- 通知タイミング -->
+  <section>
+    <h2>通知タイミング</h2>
+    <fieldset>
+      <label><input type="checkbox" name="notify" value="15" />15分前</label>
+      <label><input type="checkbox" name="notify" value="10" />10分前</label>
+      <label><input type="checkbox" name="notify" value="5" />5分前</label>
+      <label><input type="checkbox" name="notify" value="3" checked />3分前</label>
+      <label><input type="checkbox" name="notify" value="1" />1分前</label>
+    </fieldset>
+  </section>
+
+  <!-- URL起動タイミング -->
+  <section>
+    <h2>URL起動タイミング</h2>
+    <fieldset>
+      <label><input type="radio" name="launch" value="15" />15分前</label>
+      <label><input type="radio" name="launch" value="10" />10分前</label>
+      <label><input type="radio" name="launch" value="5" />5分前</label>
+      <label><input type="radio" name="launch" value="3" checked />3分前</label>
+      <label><input type="radio" name="launch" value="1" />1分前</label>
+      <label><input type="radio" name="launch" value="0" />開始時</label>
+    </fieldset>
+  </section>
+
+  <!-- 本日の通知履歴 -->
+  <section id="today-history">
+    <h2>本日の通知履歴</h2>
+    <ul id="history-list"></ul>
+  </section>
+
+  <!-- 過去の通知履歴 -->
+  <section id="past-history">
+    <h2>過去の通知履歴</h2>
+    <details id="history-details"></details>
   </section>
 
   <!-- デバッグ情報（mode=debug時のみ） -->
